@@ -29,37 +29,37 @@ pub fn main() !void {
 
     // List all secrets
     std.debug.print("\nListing all secrets:\n", .{});
-    const secrets = try keyvault.list_secrets(allocator, token.access_token, vault_name, api_version);
-    defer secrets.deinit(allocator);
+    try keyvault.list_secrets(allocator, token.access_token, vault_name, api_version);
+    //defer secrets.deinit(allocator);
 
-    for (secrets.value) |secret| {
-        std.debug.print("Secret name: {s}\n", .{secret.name});
-    }
+    // for (secrets.value) |secret| {
+    //     std.debug.print("Secret name: {s}\n", .{secret.id});
+    // }
 
     // Set a new secret
-    const new_secret = try keyvault.set_secret(
-        allocator,
-        token.access_token,
-        vault_name,
-        "test-secret",
-        "test-value",
-        api_version,
-    );
-    defer new_secret.deinit(allocator);
+    // const new_secret = try keyvault.set_secret(
+    //     allocator,
+    //     token.access_token,
+    //     vault_name,
+    //     "test-secret",
+    //     "test-value",
+    //     api_version,
+    // );
+    // defer new_secret.deinit(allocator);
 
-    std.debug.print("\nCreated new secret:\n", .{});
-    std.debug.print("Name: {s}\nValue: {s}\n", .{ new_secret.name, new_secret.value });
+    // std.debug.print("\nCreated new secret:\n", .{});
+    // std.debug.print("Name: {s}\nValue: {s}\n", .{ new_secret.id, new_secret.attributes });
 
-    // Get a specific secret
-    const retrieved_secret = try keyvault.get_secret(
-        allocator,
-        token.access_token,
-        vault_name,
-        "test-secret",
-        api_version,
-    );
-    defer retrieved_secret.deinit(allocator);
+    // // Get a specific secret
+    // const retrieved_secret = try keyvault.get_secret(
+    //     allocator,
+    //     token.access_token,
+    //     vault_name,
+    //     "test-secret",
+    //     api_version,
+    // );
+    // defer retrieved_secret.deinit(allocator);
 
-    std.debug.print("\nRetrieved secret:\n", .{});
-    std.debug.print("Name: {s}\nValue: {s}\n", .{ retrieved_secret.name, retrieved_secret.value });
+    // std.debug.print("\nRetrieved secret:\n", .{});
+    // std.debug.print("Name: {s}\nValue: {s}\n", .{ retrieved_secret.id, retrieved_secret.attributes });
 }
