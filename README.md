@@ -1,6 +1,6 @@
 # Zig Azure KeyVault Client
 
-A lightweight, secure Azure Key Vault client written in Zig. This project provides a simple interface for interacting with Azure Key Vault, implementing secure token handling and key vault operations.
+A lightweight, secure Azure Key Vault client written in Zig. This project provides a simple interface for interacting with Azure Key Vault, implementing secure token handling and key vault operations.  The demo here uses an empty sandbox Azure tenant spun up for the testing of this tool.
 
 ## Features
 
