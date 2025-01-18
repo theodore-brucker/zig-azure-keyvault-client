@@ -13,6 +13,7 @@ pub fn main() !void {
     const tenant_id = "ce1a7451-84f5-4eaa-bda7-ea1f54772c73";
     const vault_name = "sandbox-zig-vault";
     const secret_name = "AmumuKey";
+    const new_secret_value = "testValue";
     const api_version = "7.3";
 
     // Get OAuth token securely
@@ -36,9 +37,16 @@ pub fn main() !void {
     }
 
     // Get a specific secret value
-    const secret = try keyvault.get_secret(allocator, token.secure_token, vault_name, secret_name, api_version);
+    // var secret = try keyvault.get_secret(allocator, token.secure_token, vault_name, secret_name, api_version);
+    // defer secret.deinit(allocator);
+    // std.debug.print("Secret value: {s}\n", .{secret.value});
+
+    // Try to change the secret value
+    const secret = try keyvault.set_secret(allocator, token.secure_token, vault_name, secret_name, new_secret_value, api_version);
     defer secret.deinit(allocator);
 
-    // Access the secret value
-    std.debug.print("Secret value: {s}\n", .{secret.value});
+    // Fetch it again to see if it changed
+    const changed_secret = try keyvault.get_secret(allocator, token.secure_token, vault_name, secret_name, api_version);
+    defer changed_secret.deinit(allocator);
+    std.debug.print("Secret value: {s}\n", .{changed_secret.value});
 }
