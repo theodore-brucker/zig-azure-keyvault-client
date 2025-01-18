@@ -8,12 +8,12 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     // Replace these with your values
-    const client_id = "760600a2-aa56-4ba2-b1be-1f54ced2feec";
-    const client_secret = "1M58Q~y~Z5t1RUx9PVniI2XsrQ7Vz2HDdKcVWcfi";
-    const tenant_id = "ce1a7451-84f5-4eaa-bda7-ea1f54772c73";
-    const vault_name = "sandbox-zig-vault";
-    const secret_name = "AmumuKey";
-    const new_secret_value = "testValue";
+    const client_id = "";
+    const client_secret = "";
+    const tenant_id = "";
+    const vault_name = "";
+    const secret_name = "";
+    const new_secret_value = "";
     const api_version = "7.3";
 
     // Get OAuth token securely
