@@ -1,5 +1,7 @@
 const std = @import("std");
 const json = std.json;
+const mem = std.mem;
+const crypto = std.crypto;
 
 pub const OAuthError = error{
     RequestFailed,
@@ -13,15 +15,62 @@ pub const OAuthResponse = struct {
     ext_expires_in: u32,
 };
 
+pub const SecureToken = struct {
+    buffer: []u8,
+    allocator: mem.Allocator,
+
+    pub fn init(allocator: mem.Allocator, token: []const u8) !SecureToken {
+        // Create a secure buffer for the token
+        const buffer = try allocator.alloc(u8, token.len);
+        @memcpy(buffer, token);
+
+        return SecureToken{
+            .buffer = buffer,
+            .allocator = allocator,
+        };
+    }
+
+    pub fn deinit(self: *SecureToken) void {
+        // Zero out memory before freeing
+        @memset(self.buffer, 0);
+        self.allocator.free(self.buffer);
+    }
+
+    pub fn verify(self: SecureToken, other: []const u8) bool {
+        if (self.buffer.len != other.len) return false;
+        return crypto.utils.timingSafeEql(u8, self.buffer, other);
+    }
+
+    pub fn getToken(self: SecureToken, allocator: mem.Allocator) ![]u8 {
+        const token_copy = try allocator.dupe(u8, self.buffer);
+        return token_copy;
+    }
+};
+
+// Modified OAuthToken to use SecureToken
 pub const OAuthToken = struct {
-    access_token: []const u8,
+    secure_token: SecureToken,
     token_type: []const u8,
     expires_in: u32,
     ext_expires_in: u32,
+    allocator: mem.Allocator,
 
-    pub fn deinit(self: *const OAuthToken, allocator: std.mem.Allocator) void {
-        allocator.free(self.access_token);
-        allocator.free(self.token_type);
+    pub fn init(allocator: mem.Allocator, access_token: []const u8, token_type: []const u8, expires_in: u32, ext_expires_in: u32) !OAuthToken {
+        std.debug.print("\n[TOKEN] Initializing secure OAuth token\n", .{});
+        const token = OAuthToken{
+            .secure_token = try SecureToken.init(allocator, access_token),
+            .token_type = try allocator.dupe(u8, token_type),
+            .expires_in = expires_in,
+            .ext_expires_in = ext_expires_in,
+            .allocator = allocator,
+        };
+        return token;
+    }
+
+    pub fn deinit(self: *OAuthToken) void {
+        std.debug.print("[TOKEN] Secure cleanup complete\n", .{});
+        self.secure_token.deinit();
+        self.allocator.free(self.token_type);
     }
 };
 
@@ -95,11 +144,12 @@ pub fn getOAuthToken(allocator: std.mem.Allocator, client_id: []const u8, client
     );
     defer parsed.deinit();
 
-    // Create owned copies of the strings
-    return OAuthToken{
-        .access_token = try allocator.dupe(u8, parsed.value.access_token),
-        .token_type = try allocator.dupe(u8, parsed.value.token_type),
-        .expires_in = parsed.value.expires_in,
-        .ext_expires_in = parsed.value.ext_expires_in,
-    };
+    // Create the secure token
+    return try OAuthToken.init(
+        allocator,
+        parsed.value.access_token,
+        parsed.value.token_type,
+        parsed.value.expires_in,
+        parsed.value.ext_expires_in,
+    );
 }
